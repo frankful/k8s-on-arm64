@@ -1,0 +1,45 @@
+kubernetes(1.14.6) on arm64(Ubuntu 18.03)注意事项
+etcd
+etcd 新增环境变量配置
+/etc/etcd/etcd.conf 
+ETCD_UNSUPPORTED_ARCH=arm64
+并添加到系统启动文件中
+/etc/systemd/system/etcd.service 
+[Unit]
+...
+[Service]
+Type=notify
+WorkingDirectory=/var/lib/etcd/
+EnvironmentFile=/etc/etcd/etcd.conf
+ExecStart=/opt/kube/bin/etcd \
+...
+
+kube-state-metris
+kube-state-metrics-deployment.yaml文件注释--threshold=5参数(原因:启动报错无法识别该参数)
+...
+      - name: addon-resizer
+        image: gcr.io/google-containers/addon-resizer-arm64:2.1
+...
+        command:
+          - /pod_nanny
+          - --container=kube-state-metrics
+          - --cpu=100m
+          - --extra-cpu=1m
+          - --memory=100Mi
+          - --extra-memory=2Mi
+#         - --threshold=5
+          - --deployment=kube-state-metrics
+
+flannel
+flannel 镜像从0.11更新到0.12
+from
+flanneld_image: "quay.io/coreos/flannel:v0.10.0-amd64"
+to
+flanneld_image: "quay.io/coreos/flannel:v0.12.0-arm64"
+
+kube-node
+更新kubelet.service 服务配置
+from
+--pod-infra-container-image=mirrorgooglecontainers/pause-amd64:3.1 \
+to
+--pod-infra-container-image=mirrorgooglecontainers/pause-arm64:3.1 \
